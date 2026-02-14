@@ -1,0 +1,106 @@
+index.html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>楽ボート</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f5f6f8; padding:16px; }
+    h1 { text-align:center; }
+    .card { background:#fff; padding:16px; border-radius:12px; margin-bottom:12px; }
+    label { display:block; margin-top:8px; }
+    input, select, textarea { width:100%; padding:8px; margin-top:4px; border-radius:6px; border:1px solid #ccc; }
+    button { width:100%; padding:12px; margin-top:12px; border:none; border-radius:8px; background:#111; color:#fff; font-size:16px; }
+    .result { font-size:20px; font-weight:bold; }
+  </style>
+</head>
+<body>
+
+<h1>楽ボート</h1>
+
+<div class="card">
+  <div>今日の収支：<span id="todayProfit" class="result">0円</span></div>
+  <div>今日の回収率：<span id="todayRate" class="result">0.0%</span></div>
+  <div id="message"></div>
+</div>
+
+<div class="card">
+  <label>競技</label>
+  <select id="type">
+    <option value="競馬">競馬</option>
+    <option value="ボート">ボート</option>
+  </select>
+
+  <label>日付</label>
+  <input type="date" id="date" />
+
+  <label>レース名</label>
+  <input type="text" id="race" placeholder="例：大村10R / 日本ダービー" />
+
+  <label>賭け金</label>
+  <input type="number" id="bet" />
+
+  <label>払戻</label>
+  <input type="number" id="pay" />
+
+  <label>そのレースの収支</label>
+  <div id="raceProfit" class="result">0円</div>
+
+  <label>メモ</label>
+  <textarea id="memo"></textarea>
+
+  <button onclick="save()">記録する</button>
+</div>
+
+<script>
+  let records = [];
+
+  function formatYen(num){
+    return num.toLocaleString() + "円";
+  }
+
+  function calcRaceProfit(){
+    const bet = Number(document.getElementById("bet").value || 0);
+    const pay = Number(document.getElementById("pay").value || 0);
+    const profit = pay - bet;
+    document.getElementById("raceProfit").innerText = (profit >= 0 ? "+" : "") + formatYen(profit);
+  }
+
+  document.getElementById("bet").addEventListener("input", calcRaceProfit);
+  document.getElementById("pay").addEventListener("input", calcRaceProfit);
+
+  function save(){
+    const bet = Number(document.getElementById("bet").value || 0);
+    const pay = Number(document.getElementById("pay").value || 0);
+    const date = document.getElementById("date").value;
+
+    records.push({ bet, pay, date });
+    updateToday();
+    alert("保存しました！");
+  }
+
+  function updateToday(){
+    const today = new Date().toISOString().slice(0,10);
+    const todays = records.filter(r => r.date === today);
+
+    const totalBet = todays.reduce((a,b)=>a+b.bet,0);
+    const totalPay = todays.reduce((a,b)=>a+b.pay,0);
+    const profit = totalPay - totalBet;
+    const rate = totalBet === 0 ? 0 : (totalPay / totalBet * 100);
+
+    document.getElementById("todayProfit").innerText =
+      (profit >= 0 ? "+" : "") + formatYen(profit);
+    document.getElementById("todayRate").innerText = rate.toFixed(1) + "%";
+
+    const msg = document.getElementById("message");
+    if(profit < 0){
+      msg.innerText = "今日はここまでにしよ。深追い注意⚠️";
+    } else {
+      msg.innerText = "いい感じ。でも無理しすぎないでね";
+    }
+  }
+</script>
+
+</body>
+</html>
