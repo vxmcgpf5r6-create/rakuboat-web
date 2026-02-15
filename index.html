@@ -1,10 +1,10 @@
-index.html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>楽ボート</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>楽ボート</title>
+
 <style>
 body {
   margin: 0;
@@ -35,7 +35,7 @@ label {
   display: block;
 }
 
-input, select {
+input {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
@@ -68,13 +68,8 @@ button:active {
   margin-top: 10px;
 }
 
-.plus {
-  color: #00b894;
-}
-
-.minus {
-  color: #d63031;
-}
+.plus { color: #00b894; }
+.minus { color: #d63031; }
 
 #message {
   text-align: center;
@@ -83,94 +78,80 @@ button:active {
 }
 </style>
 </head>
+
 <body>
 
 <h1>楽ボート</h1>
 
 <div class="card">
-  <div>今日の収支：<span id="todayProfit" class="result">0円</span></div>
-  <div>今日の回収率：<span id="todayRate" class="result">0.0%</span></div>
-  <div id="message"></div>
+
+<label>日付</label>
+<input type="date" id="date" />
+
+<label>投資金額</label>
+<input type="number" id="bet" placeholder="例: 3000" />
+
+<label>払戻金額</label>
+<input type="number" id="pay" placeholder="例: 5400" />
+
+<button onclick="saveRecord()">保存する</button>
+
+<div class="result">
+  今日の収支: <span id="todayProfit" class="result">¥0</span>
 </div>
 
-<div class="card">
-  <label>競技</label>
-  <select id="type">
-    <option value="競馬">競馬</option>
-    <option value="ボート">ボート</option>
-  </select>
+<div id="message"></div>
 
-  <label>日付</label>
-  <input type="date" id="date" />
-
-  <label>レース名</label>
-  <input type="text" id="race" placeholder="例：大村10R / 日本ダービー" />
-
-  <label>賭け金</label>
-  <input type="number" id="bet" />
-
-  <label>払戻</label>
-  <input type="number" id="pay" />
-
-  <label>そのレースの収支</label>
-  <div id="raceProfit" class="result">0円</div>
-
-  <label>メモ</label>
-  <textarea id="memo"></textarea>
-
-  <button onclick="save()">記録する</button>
 </div>
 
 <script>
-  let records = [];
+let records = JSON.parse(localStorage.getItem("records")) || [];
 
-  function formatYen(num){
-    return num.toLocaleString() + "円";
+function formatYen(num){
+  return "¥" + num.toLocaleString();
+}
+
+function saveRecord(){
+  const bet = Number(document.getElementById("bet").value);
+  const pay = Number(document.getElementById("pay").value);
+  const date = document.getElementById("date").value;
+
+  if(!date || !bet){
+    alert("日付と投資金額を入力してね");
+    return;
   }
 
-  function calcRaceProfit(){
-    const bet = Number(document.getElementById("bet").value || 0);
-    const pay = Number(document.getElementById("pay").value || 0);
-    const profit = pay - bet;
-    document.getElementById("raceProfit").innerText = (profit >= 0 ? "+" : "") + formatYen(profit);
+  records.push({ bet, pay, date });
+  localStorage.setItem("records", JSON.stringify(records));
+
+  updateToday();
+  alert("保存しました！");
+}
+
+function updateToday(){
+  const today = new Date().toISOString().slice(0,10);
+  const todays = records.filter(r => r.date === today);
+
+  const totalBet = todays.reduce((a,b)=>a+b.bet,0);
+  const totalPay = todays.reduce((a,b)=>a+b.pay,0);
+
+  const profit = totalPay - totalBet;
+
+  const profitEl = document.getElementById("todayProfit");
+  profitEl.innerText =
+    (profit >= 0 ? "+" : "") + formatYen(profit);
+  profitEl.className =
+    "result " + (profit >= 0 ? "plus" : "minus");
+
+  const msg = document.getElementById("message");
+  if(profit < 0){
+    msg.innerText = "今日はここまでにしよ。深追い注意⚠️";
+  } else {
+    msg.innerText = "いい感じ。でも無理しすぎないで👍";
   }
+}
 
-  document.getElementById("bet").addEventListener("input", calcRaceProfit);
-  document.getElementById("pay").addEventListener("input", calcRaceProfit);
-
-  function save(){
-    const bet = Number(document.getElementById("bet").value || 0);
-    const pay = Number(document.getElementById("pay").value || 0);
-    const date = document.getElementById("date").value;
-
-    records.push({ bet, pay, date });
-    updateToday();
-    alert("保存しました！");
-  }
-
-  function updateToday(){
-    const today = new Date().toISOString().slice(0,10);
-    const todays = records.filter(r => r.date === today);
-
-    const totalBet = todays.reduce((a,b)=>a+b.bet,0);
-    const totalPay = todays.reduce((a,b)=>a+b.pay,0);
-    const profit = totalPay - totalBet;
-    const rate = totalBet === 0 ? 0 : (totalPay / totalBet * 100);
-
-    const profitEl = document.getElementById("todayProfit");
-profitEl.innerText =
-  (profit >= 0 ? "+" : "") + formatYen(profit);
-profitEl.className =
-  "result " + (profit >= 0 ? "plus" : "minus");
-    document.getElementById("todayRate").innerText = rate.toFixed(1) + "%";
-
-    const msg = document.getElementById("message");
-    if(profit < 0){
-      msg.innerText = "今日はここまでにしよ。深追い注意⚠️";
-    } else {
-      msg.innerText = "いい感じ。でも無理しすぎないでね";
-    }
-  }
+updateToday();
 </script>
 
 </body>
