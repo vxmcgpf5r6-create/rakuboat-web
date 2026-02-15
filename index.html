@@ -5,15 +5,83 @@ index.html
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>楽ボート</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background:#f5f6f8; padding:16px; }
-    h1 { text-align:center; }
-    .card { background:#fff; padding:16px; border-radius:12px; margin-bottom:12px; }
-    label { display:block; margin-top:8px; }
-    input, select, textarea { width:100%; padding:8px; margin-top:4px; border-radius:6px; border:1px solid #ccc; }
-    button { width:100%; padding:12px; margin-top:12px; border:none; border-radius:8px; background:#111; color:#fff; font-size:16px; }
-    .result { font-size:20px; font-weight:bold; }
-  </style>
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  padding: 20px;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  margin-bottom: 20px;
+}
+
+label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 12px;
+  display: block;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-top: 5px;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #2a5298;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 15px;
+  transition: 0.2s;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.result {
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.plus {
+  color: #00b894;
+}
+
+.minus {
+  color: #d63031;
+}
+
+#message {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: bold;
+}
+</style>
 </head>
 <body>
 
