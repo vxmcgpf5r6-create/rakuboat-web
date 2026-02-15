@@ -157,8 +157,11 @@ button:active {
     const profit = totalPay - totalBet;
     const rate = totalBet === 0 ? 0 : (totalPay / totalBet * 100);
 
-    document.getElementById("todayProfit").innerText =
-      (profit >= 0 ? "+" : "") + formatYen(profit);
+    const profitEl = document.getElementById("todayProfit");
+profitEl.innerText =
+  (profit >= 0 ? "+" : "") + formatYen(profit);
+profitEl.className =
+  "result " + (profit >= 0 ? "plus" : "minus");
     document.getElementById("todayRate").innerText = rate.toFixed(1) + "%";
 
     const msg = document.getElementById("message");
