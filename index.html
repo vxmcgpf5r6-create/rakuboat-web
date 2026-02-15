@@ -5,72 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>楽ボート</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  padding: 20px;
-  color: #333;
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:linear-gradient(135deg,#1e3c72,#2a5298);
+  padding:20px;
 }
-
-h1 {
-  text-align: center;
-  color: white;
-  margin-bottom: 20px;
+h1{text-align:center;color:white;}
+.card{
+  background:white;
+  padding:20px;
+  border-radius:16px;
+  margin-bottom:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.15);
 }
-
-.card {
-  background: #ffffff;
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  margin-bottom: 20px;
+label{font-weight:bold;margin-top:10px;display:block;}
+input{
+  width:100%;
+  padding:10px;
+  margin-top:5px;
+  border-radius:8px;
+  border:1px solid #ddd;
 }
-
-label {
-  font-size: 14px;
-  font-weight: bold;
-  margin-top: 12px;
-  display: block;
+button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border:none;
+  border-radius:10px;
+  background:#2a5298;
+  color:white;
+  font-weight:bold;
 }
-
-input {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  margin-top: 5px;
-  font-size: 16px;
-}
-
-button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  background: #2a5298;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 15px;
-}
-
-.result {
-  font-size: 20px;
-  font-weight: bold;
-  text-align: center;
-  margin-top: 10px;
-}
-
-.plus { color: #00b894; }
-.minus { color: #d63031; }
-
-#message {
-  text-align: center;
-  margin-top: 10px;
-  font-weight: bold;
-}
+.result{font-size:18px;font-weight:bold;margin-top:10px;}
+.plus{color:#00b894;}
+.minus{color:#d63031;}
+.list-item{font-size:14px;margin-top:5px;}
+#message{margin-top:10px;font-weight:bold;text-align:center;}
+canvas{margin-top:20px;}
 </style>
 </head>
 
@@ -79,22 +54,21 @@ button {
 <h1>楽ボート</h1>
 
 <div class="card">
-
 <label>日付</label>
-<input type="date" id="date" />
+<input type="date" id="date">
 
 <label>場所・レース名</label>
-<input type="text" id="place" placeholder="例：大村10R / 日本ダービー" />
+<input type="text" id="place">
 
 <label>投資金額</label>
-<input type="number" id="bet" placeholder="例: 3000" />
+<input type="number" id="bet">
 
 <label>払戻金額</label>
-<input type="number" id="pay" placeholder="例: 5400" />
+<input type="number" id="pay">
 
 <div class="result">
-  このレースの収支:
-  <span id="raceProfit">¥0</span>
+このレースの収支：
+<span id="raceProfit">¥0</span>
 </div>
 
 <button onclick="saveRecord()">保存する</button>
@@ -102,74 +76,149 @@ button {
 <hr>
 
 <div class="result">
-  今日の収支:
-  <span id="todayProfit" class="result">¥0</span>
+今日の収支：
+<span id="todayProfit">¥0</span>
+</div>
+
+<div class="result">
+今日の回収率：
+<span id="todayRate">0%</span>
+</div>
+
+<div id="todayList"></div>
+
+<hr>
+
+<div class="result">
+今月トータル：
+<span id="monthProfit">¥0</span>
+</div>
+
+<div class="result">
+今月回収率：
+<span id="monthRate">0%</span>
 </div>
 
 <div id="message"></div>
 
+<canvas id="chart"></canvas>
+
 </div>
 
 <script>
-let records = JSON.parse(localStorage.getItem("records")) || [];
+let records = JSON.parse(localStorage.getItem("records"))||[];
 
 function formatYen(num){
-  return "¥" + num.toLocaleString();
+  return "¥"+num.toLocaleString();
 }
 
-function calculateRaceProfit(){
-  const bet = Number(document.getElementById("bet").value || 0);
-  const pay = Number(document.getElementById("pay").value || 0);
-  const profit = pay - bet;
-  document.getElementById("raceProfit").innerText =
-    (profit >= 0 ? "+" : "") + formatYen(profit);
+function calcRace(){
+  const bet=Number(betEl.value||0);
+  const pay=Number(payEl.value||0);
+  const p=pay-bet;
+  raceProfit.innerText=(p>=0?"+":"")+formatYen(p);
 }
-
-document.getElementById("bet").addEventListener("input", calculateRaceProfit);
-document.getElementById("pay").addEventListener("input", calculateRaceProfit);
+const betEl=document.getElementById("bet");
+const payEl=document.getElementById("pay");
+const raceProfit=document.getElementById("raceProfit");
+betEl.addEventListener("input",calcRace);
+payEl.addEventListener("input",calcRace);
 
 function saveRecord(){
-  const bet = Number(document.getElementById("bet").value);
-  const pay = Number(document.getElementById("pay").value);
-  const date = document.getElementById("date").value;
-  const place = document.getElementById("place").value;
+  const bet=Number(betEl.value);
+  const pay=Number(payEl.value);
+  const date=document.getElementById("date").value;
+  const place=document.getElementById("place").value;
 
-  if(!date || !bet){
-    alert("日付と投資金額を入力してね");
-    return;
-  }
+  if(!date||!bet)return alert("日付と投資金額入力");
 
-  records.push({ bet, pay, date, place });
-  localStorage.setItem("records", JSON.stringify(records));
+  records.push({bet,pay,date,place});
+  localStorage.setItem("records",JSON.stringify(records));
 
-  updateToday();
-  alert("保存しました！");
+  updateAll();
+  alert("保存しました");
 }
 
-function updateToday(){
-  const today = new Date().toISOString().slice(0,10);
-  const todays = records.filter(r => r.date === today);
+function updateAll(){
+  const today=new Date().toISOString().slice(0,10);
+  const month=today.slice(0,7);
 
-  const totalBet = todays.reduce((a,b)=>a+b.bet,0);
-  const totalPay = todays.reduce((a,b)=>a+b.pay,0);
+  let tBet=0,tPay=0,mBet=0,mPay=0;
 
-  const profit = totalPay - totalBet;
+  const todayList=document.getElementById("todayList");
+  todayList.innerHTML="";
 
-  const profitEl = document.getElementById("todayProfit");
-  profitEl.innerText =
-    (profit >= 0 ? "+" : "") + formatYen(profit);
-  profitEl.className =
-    "result " + (profit >= 0 ? "plus" : "minus");
+  records.forEach(r=>{
+    if(r.date===today){
+      tBet+=r.bet;
+      tPay+=r.pay;
 
-  const msg = document.getElementById("message");
-  if(profit < 0){
-    msg.innerText = "今日はここまでにしよ。深追い注意⚠️";
-  } else {
-    msg.innerText = "いい感じ。でも無理しすぎないで👍";
-  }
+      const p=r.pay-r.bet;
+      const div=document.createElement("div");
+      div.className="list-item";
+      div.innerText=`${r.place} 投資${formatYen(r.bet)} 払戻${formatYen(r.pay)} ${(p>=0?"+":"")+formatYen(p)}`;
+      todayList.appendChild(div);
+    }
+    if(r.date.startsWith(month)){
+      mBet+=r.bet;
+      mPay+=r.pay;
+    }
+  });
+
+  const tProfit=tPay-tBet;
+  const tRate=tBet?((tPay/tBet)*100).toFixed(1):0;
+  const mProfit=mPay-mBet;
+  const mRate=mBet?((mPay/mBet)*100).toFixed(1):0;
+
+  setValue("todayProfit",tProfit);
+  setValue("monthProfit",mProfit);
+
+  todayRate.innerText=tRate+"%";
+  monthRate.innerText=mRate+"%";
+
+  message.innerText=tProfit<0?
+  "今日はここまでにしよ。深追い注意⚠️":
+  "いい感じ。でも無理しすぎないで👍";
+
+  drawChart();
 }
 
-updateToday();
+function setValue(id,val){
+  const el=document.getElementById(id);
+  el.innerText=(val>=0?"+":"")+formatYen(val);
+  el.className=val>=0?"plus":"minus";
+}
+
+function drawChart(){
+  const ctx=document.getElementById("chart");
+  const daily={};
+  records.forEach(r=>{
+    if(!daily[r.date])daily[r.date]=0;
+    daily[r.date]+=r.pay-r.bet;
+  });
+
+  const dates=Object.keys(daily).sort();
+  let sum=0;
+  const data=dates.map(d=>{
+    sum+=daily[d];
+    return sum;
+  });
+
+  new Chart(ctx,{
+    type:"line",
+    data:{
+      labels:dates,
+      datasets:[{
+        label:"累計収支",
+        data:data,
+        fill:false,
+        tension:0.2
+      }]
+    }
+  });
+}
+
+updateAll();
 </script>
 
 </body>
